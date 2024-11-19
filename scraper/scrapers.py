@@ -1,4 +1,3 @@
-import random
 import time
 from typing import List, Dict
 from urllib.parse import urlencode
@@ -6,10 +5,13 @@ from urllib.parse import urlencode
 import requests
 from bs4 import BeautifulSoup
 
-from scraper.headers import headers_list
-from scraper.logs.logging import configure_logging
-
-logger = configure_logging()
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate",
+    "Connection": "keep-alive",
+}
 
 
 def scrape_the_ladders(search_keyword: str = "", page: int = 2) -> List[Dict[str, str]]:
@@ -20,7 +22,7 @@ def scrape_the_ladders(search_keyword: str = "", page: int = 2) -> List[Dict[str
     # Iterate through pages
     for page in range(1, page + 1):  # noqa
         query_params = {  # noqa
-            "keywords": search_keyword,
+            "keywords": search_keyword.lower(),
             "order": "SCORE",
             "daysPublished": 7,
             "distance": 200,
@@ -30,7 +32,7 @@ def scrape_the_ladders(search_keyword: str = "", page: int = 2) -> List[Dict[str
 
         try:
             # Make a GET request to the URL
-            response = requests.get(url, headers=random.choice(headers_list))
+            response = requests.get(url, headers=headers)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             # Parse the page with BeautifulSoup
@@ -81,9 +83,9 @@ def scrape_the_ladders(search_keyword: str = "", page: int = 2) -> List[Dict[str
                     }
                 )
 
-            logger.info(f"Page {page} data has been added to the list.")
+            print(f"Page {page} data has been added to the list.")
         except requests.exceptions.RequestException as e:
-            logger.error(f"An error occurred: {e}")
+            print(f"An error occurred: {e}")
 
         # Add a small delay to prevent overloading the server
         time.sleep(5)
@@ -96,7 +98,7 @@ def scrape_simply_hired(
 ) -> List[Dict[str, str]]:
     # Start URL and initial cursor
     base_url = "https://www.simplyhired.com/search"
-    initial_url = f"{base_url}?q={search_keyword}&t=7"
+    initial_url = f"{base_url}?q={search_keyword.lower()}&t=7"
 
     # Pagination using cursor
     next_cursor = None  # Initial cursor
@@ -110,7 +112,7 @@ def scrape_simply_hired(
 
         try:
             # Make a GET request to the URL
-            response = requests.get(url, headers=random.choice(headers_list))
+            response = requests.get(url, headers=headers)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             # Parse the page with BeautifulSoup
@@ -166,21 +168,21 @@ def scrape_simply_hired(
                     }
                 )
 
-            logger.info(f"Page {page} data has been added to the list.")
+            print(f"Page {page} data has been added to the list.")
 
             # Extract the next cursor from the pagination
             next_page_link = soup.find("a", {"aria-label": "Next page"})
             if next_page_link:
                 next_cursor = next_page_link["href"].split("cursor=")[-1]
             else:
-                logger.info("No more pages available.")
+                print("No more pages available.")
                 break
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"An error occurred: {e}")
+            print(f"An error occurred: {e}")
 
         # Add a small delay to prevent overloading the server
-        time.sleep(5)
+        time.sleep(5)  # Adjust this delay as needed
 
     return job_data
 
@@ -193,16 +195,16 @@ def scrape_flex_jobs(search_keyword: str = "", page: int = 2) -> List[Dict[str, 
     # Iterate through pages
     for page in range(1, page + 1):  # noqa
         query_params = {  # noqa
-            "searchkeyword": search_keyword,
+            "searchkeyword": search_keyword.lower(),
             "page": page,
-            "sortbyposteddate": "true",
+            "sortbyrelevance": "true",
         }
 
         url = f"{base_url}?{urlencode(query_params)}"  # noqa
 
         try:
             # Make a GET request to the URL
-            response = requests.get(url, headers=random.choice(headers_list))
+            response = requests.get(url, headers=headers)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             # Parse the page with BeautifulSoup
@@ -251,9 +253,9 @@ def scrape_flex_jobs(search_keyword: str = "", page: int = 2) -> List[Dict[str, 
                     }
                 )
 
-            logger.info(f"Page {page} data has been added to the list.")
+            print(f"Page {page} data has been added to the list.")
         except requests.exceptions.RequestException as e:
-            logger.error(f"An error occurred: {e}")
+            print(f"An error occurred: {e}")
 
         # Add a small delay to prevent overloading the server
         time.sleep(5)

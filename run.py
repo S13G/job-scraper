@@ -1,16 +1,7 @@
-import os
-
-from dotenv import load_dotenv
 from flask import jsonify, request
 
 from scraper import create_app
-from scraper.logs.logging import configure_logging
 from scraper.scrapers import scrape_flex_jobs, scrape_simply_hired, scrape_the_ladders
-
-# Load .env file
-load_dotenv()
-
-logger = configure_logging()
 
 app = create_app()
 
@@ -30,16 +21,16 @@ def scrape_jobs():
         all_job_data = []
 
         # Scraping
-        logger.info("Scraping The Ladders...")
+        print("Scraping The Ladders...")
         all_job_data.extend(scrape_the_ladders(search_keyword, page_count))
 
-        logger.info("Scraping SimplyHired...")
+        print("Scraping SimplyHired...")
         all_job_data.extend(scrape_simply_hired(search_keyword, page_count))
 
-        logger.info("Scraping Flexjobs...")
+        print("Scraping Flexjobs...")
         all_job_data.extend(scrape_flex_jobs(search_keyword, page_count))
 
-        logger.info(f"Length of all jobs: {len(all_job_data)}")
+        print(f"Length of all jobs: {len(all_job_data)}")
 
         # Return the results as JSON
         return jsonify({"jobs": all_job_data})
@@ -49,4 +40,4 @@ def scrape_jobs():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)

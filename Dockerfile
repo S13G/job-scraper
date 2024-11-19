@@ -15,6 +15,5 @@ RUN pip3 install -r requirements.txt
 # Copy the entire project into the workdir
 COPY . /scraper
 
-
 # Run the scraper
 CMD ["python", "run.py"]
